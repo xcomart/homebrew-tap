@@ -21,6 +21,11 @@ permissions:
   contents: read
 
 env:
+  # `audit --online` asks the GitHub API about each cask's repository.
+  # Anonymous requests share a limit of 60 an hour with every other job on
+  # the runner's IP, and one run had its audit fail on that limit; the job's
+  # own token lifts it.
+  HOMEBREW_GITHUB_API_TOKEN: ${{ github.token }}
   HOMEBREW_NO_AUTO_UPDATE: "1"
   HOMEBREW_NO_ENV_HINTS: "1"
   HOMEBREW_NO_ANALYTICS: "1"
