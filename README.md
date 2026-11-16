@@ -83,4 +83,4 @@ The official cask repository no longer accepts applications that fail
 Gatekeeper, which un-notarized bundles do, and it also has notability
 thresholds these projects do not meet yet. A tap has neither requirement. If
 the bundles are ever signed with a Developer ID and notarized, the casks here
-can be submitted there nearly unchanged, apart from the `postflight`.
+can be submitted there nearly unchanged, apart from the `postflight_steps`.

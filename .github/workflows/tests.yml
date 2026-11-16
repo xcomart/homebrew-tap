@@ -73,6 +73,14 @@ jobs:
             brew install --cask "xcomart/tap/$name"
             test -x "$app/Contents/MacOS/$name"
             codesign --verify --strict "$app"
+            # The quarantine check below only means something if Homebrew
+            # quarantined the download in the first place; say which it was.
+            download=$(brew --cache --cask "xcomart/tap/$name")
+            if xattr -p com.apple.quarantine "$download" > /dev/null 2>&1; then
+              echo "$name: the download was quarantined"
+            else
+              echo "::notice title=$name::the download carried no quarantine flag, so the check below proves nothing"
+            fi
             if xattr -r "$app" | grep -q com.apple.quarantine; then
               echo "::error title=$name::$app still carries com.apple.quarantine"
               exit 1
