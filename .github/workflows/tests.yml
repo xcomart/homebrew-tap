@@ -1,0 +1,73 @@
+# Check every cask the way a user meets it: style and audit first, then a
+# real install on a macOS runner, then an uninstall with --zap.
+#
+# The app release workflows push version bumps here with a personal access
+# token rather than GITHUB_TOKEN, so their pushes run this workflow too: every
+# release that reaches the tap is installed once before anyone else installs
+# it.
+#
+# Third-party actions are pinned to a full commit SHA, with the release that
+# SHA belongs to in a trailing comment; bump both together.
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  HOMEBREW_NO_AUTO_UPDATE: "1"
+  HOMEBREW_NO_ENV_HINTS: "1"
+  HOMEBREW_NO_ANALYTICS: "1"
+
+jobs:
+  casks:
+    name: casks
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # Homebrew finds a tap by its directory under Library/Taps. Linking the
+      # checkout there tests this commit, not whatever `main` holds on GitHub.
+      - name: Tap the checkout as xcomart/tap
+        run: |
+          taps="$(brew --repository)/Library/Taps/xcomart"
+          mkdir -p "$taps"
+          ln -s "$GITHUB_WORKSPACE" "$taps/homebrew-tap"
+          brew tap
+
+      - name: Style
+        run: brew style xcomart/tap
+
+      - name: Audit
+        run: |
+          set -euo pipefail
+          for cask in Casks/*.rb; do
+            brew audit --cask --strict --online "xcomart/tap/$(basename "$cask" .rb)"
+          done
+
+      # What matters for these bundles in particular: the executable is where
+      # the `app` stanza says, the bundle's own ad-hoc signature still holds,
+      # and the postflight really took the quarantine flag off, which is the
+      # difference between an app that opens and one Gatekeeper refuses.
+      - name: Install, check and uninstall
+        run: |
+          set -euo pipefail
+          for cask in Casks/*.rb; do
+            name=$(basename "$cask" .rb)
+            app="/Applications/$name.app"
+            brew install --cask "xcomart/tap/$name"
+            test -x "$app/Contents/MacOS/$name"
+            codesign --verify --strict "$app"
+            if xattr -r "$app" | grep -q com.apple.quarantine; then
+              echo "::error title=$name::$app still carries com.apple.quarantine"
+              exit 1
+            fi
+            brew uninstall --cask --zap "xcomart/tap/$name"
+            test ! -e "$app"
+          done
