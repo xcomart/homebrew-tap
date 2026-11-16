@@ -41,6 +41,11 @@ jobs:
           ln -s "$GITHUB_WORKSPACE" "$taps/homebrew-tap"
           brew tap
 
+      # Since Homebrew 6 a third-party tap is ignored until it is trusted.
+      # `style` and `audit` load the whole tap, so they need tap-wide trust.
+      - name: Trust the tap
+        run: brew trust xcomart/tap
+
       - name: Style
         run: brew style xcomart/tap
 
@@ -51,13 +56,17 @@ jobs:
             brew audit --cask --strict --online "xcomart/tap/$(basename "$cask" .rb)"
           done
 
-      # What matters for these bundles in particular: the executable is where
-      # the `app` stanza says, the bundle's own ad-hoc signature still holds,
-      # and the postflight really took the quarantine flag off, which is the
-      # difference between an app that opens and one Gatekeeper refuses.
+      # Installed the way a user installs them: tap-wide trust dropped again,
+      # so each fully qualified install trusts its own cask and nothing else.
+      # Then what matters for these bundles in particular: the executable is
+      # where the `app` stanza says, the bundle's own ad-hoc signature still
+      # holds, and the postflight really took the quarantine flag off, which
+      # is the difference between an app that opens and one Gatekeeper
+      # refuses.
       - name: Install, check and uninstall
         run: |
           set -euo pipefail
+          brew untrust xcomart/tap
           for cask in Casks/*.rb; do
             name=$(basename "$cask" .rb)
             app="/Applications/$name.app"

@@ -14,16 +14,17 @@ cask "rudbgen" do
 
   auto_updates true
   depends_on arch: :arm64
-  depends_on macos: ">= :big_sur"
+  depends_on :macos
 
   app "rudbgen-v#{version}-aarch64-apple-darwin/rudbgen.app"
 
   # The bundle is ad-hoc signed, not notarized, so Gatekeeper refuses the
   # quarantined copy Homebrew downloads. The README's manual fix, done here.
-  postflight do
-    system_command "/usr/bin/xattr",
-                   args:         ["-d", "-r", "com.apple.quarantine", "#{appdir}/rudbgen.app"],
-                   print_stderr: false
+  postflight_steps do
+    run "/usr/bin/xattr",
+        args:         ["-d", "-r", "com.apple.quarantine", "{{appdir}}/rudbgen.app"],
+        must_succeed: false,
+        print_stderr: false
   end
 
   zap trash: [

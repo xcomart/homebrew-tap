@@ -17,8 +17,18 @@ brew install --cask xcomart/tap/rudbman
 brew install --cask xcomart/tap/rudbgen
 ```
 
-The qualified name taps this repository on first use; `brew tap xcomart/tap`
-beforehand does the same thing explicitly.
+The qualified name taps this repository on first use. Since Homebrew 6 a
+third-party tap is ignored until it is trusted, and installing by the
+qualified name trusts that one cask and nothing else in the tap. To install
+by the short name instead, trust the cask first:
+
+```bash
+brew tap xcomart/tap
+brew trust --cask xcomart/tap/rulogman
+brew install --cask rulogman
+```
+
+`brew trust xcomart/tap` trusts every current and future cask here at once.
 
 ## What the casks do differently
 
@@ -30,7 +40,7 @@ application's README describes.
 **The quarantine flag is cleared on install.** The bundles are ad-hoc signed
 rather than notarized; there is no Apple Developer account behind them. So
 Gatekeeper refuses the quarantined copy Homebrew downloads, and Homebrew 5 no
-longer offers `--no-quarantine`. Each cask's `postflight` runs
+longer offers `--no-quarantine`. Each cask's `postflight_steps` runs
 `xattr -d -r com.apple.quarantine` on the installed bundle. That is the same
 command each README walks a manual install through. Installing from this tap
 therefore means trusting the GitHub release it points at, whose SHA256 the
