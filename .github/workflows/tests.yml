@@ -1,5 +1,6 @@
 # Check every cask the way a user meets it: style and audit first, then a
-# real install on a macOS runner, then an uninstall with --zap.
+# real install on a macOS runner, a run of the installed binary, and an
+# uninstall with --zap.
 #
 # The app release workflows push version bumps here with a personal access
 # token rather than GITHUB_TOKEN, so their pushes run this workflow too: every
@@ -73,6 +74,15 @@ jobs:
             brew install --cask "xcomart/tap/$name"
             test -x "$app/Contents/MacOS/$name"
             codesign --verify --strict "$app"
+            # `--version` prints "<name> <version>" and exits before any
+            # window opens, so it proves the bundle runs and is the release
+            # the cask names.
+            version=$(sed -n 's/^  version "\(.*\)"$/\1/p' "$cask")
+            reported=$("$app/Contents/MacOS/$name" --version)
+            if [ "$reported" != "$name $version" ]; then
+              echo "::error title=$name::--version printed '$reported', expected '$name $version'"
+              exit 1
+            fi
             # The quarantine check below only means something if Homebrew
             # quarantined the download in the first place; say which it was.
             download=$(brew --cache --cask "xcomart/tap/$name")
