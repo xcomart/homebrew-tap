@@ -1,6 +1,6 @@
 cask "rudbman" do
-  version "0.3.9"
-  sha256 "d36cba9916da946f570739313ecd178b0396bc8d8af65b902248e2f03e4f19b6"
+  version "0.3.10"
+  sha256 "b8c08aa2819782f18406be87d54044662c778e9e88bd13f1c290e3ff43943374"
 
   url "https://github.com/xcomart/rudbman/releases/download/v#{version}/rudbman-v#{version}-aarch64-apple-darwin.tar.gz"
   name "rudbman"
