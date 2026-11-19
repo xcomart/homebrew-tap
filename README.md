@@ -32,10 +32,11 @@ brew install --cask rulogman
 
 ## What the casks do differently
 
-**Apple Silicon only.** Each release ships one macOS build,
-`aarch64-apple-darwin`, so every cask declares `depends_on arch: :arm64`. An
-Intel Mac has no build to install; build from source there, as each
-application's README describes.
+**Apple Silicon and Intel.** Each release ships two macOS builds,
+`aarch64-apple-darwin` and `x86_64-apple-darwin`, and each cask's `arch`
+stanza picks the one that matches the Mac. A cask still at a version from
+before the Intel build declares `depends_on arch: :arm64` instead; the next
+release rewrites it into the two-architecture form.
 
 **The quarantine flag is cleared on install.** The bundles are ad-hoc signed
 rather than notarized; there is no Apple Developer account behind them. So
@@ -60,9 +61,9 @@ and stay there either way.
 
 Nobody edits the versions here by hand. Each application's release workflow
 (`.github/workflows/release.yml`, the `homebrew` job) runs once the GitHub
-release is published. It reads the macOS archive's SHA256 from the release's
-`SHA256SUMS`, writes the new `version` and `sha256` into the cask, and commits
-the result to `main`. It never moves a cask to an older version than the one
+release is published. It reads both macOS archives' SHA256s from the
+release's `SHA256SUMS`, writes the new `version` and the `arm` and `intel`
+`sha256` values into the cask, and commits the result to `main`. It never moves a cask to an older version than the one
 already here.
 
 That job pushes with the `HOMEBREW_TAP_TOKEN` secret of the application's
@@ -71,11 +72,12 @@ repository. The token is a fine-grained personal access token with
 job leaves a warning on the release run and changes nothing. Because the push
 comes from a personal token rather than `GITHUB_TOKEN`, it runs this
 repository's [Tests](.github/workflows/tests.yml) workflow: style, audit and a
-real install, check and uninstall of every cask on a macOS runner.
+real install, check and uninstall of every cask on an Apple Silicon and an
+Intel macOS runner.
 
-To update a cask by hand anyway, change `version` and `sha256` together. The
-checksum is the `aarch64-apple-darwin.tar.gz` line of the release's
-`SHA256SUMS`.
+To update a cask by hand anyway, change `version` and both `sha256` values
+together. The checksums are the `aarch64-apple-darwin.tar.gz` (`arm`) and
+`x86_64-apple-darwin.tar.gz` (`intel`) lines of the release's `SHA256SUMS`.
 
 ## Why not homebrew/cask
 
