@@ -61,11 +61,19 @@ jobs:
       - name: Style
         run: brew style xcomart/tap
 
+      # On Intel, a cask from before the Intel build is skipped here as it is
+      # below: auditing it would judge the Apple Silicon download against an
+      # Intel Mac's oldest supported macOS.
       - name: Audit
         run: |
           set -euo pipefail
           for cask in Casks/*.rb; do
-            brew audit --cask --strict --online "xcomart/tap/$(basename "$cask" .rb)"
+            name=$(basename "$cask" .rb)
+            if [ "$(uname -m)" = x86_64 ] && grep -qx '  depends_on arch: :arm64' "$cask"; then
+              echo "::notice title=$name::Apple Silicon only at this version; not audited on Intel"
+              continue
+            fi
+            brew audit --cask --strict --online "xcomart/tap/$name"
           done
 
       # Installed the way a user installs them: tap-wide trust dropped again,

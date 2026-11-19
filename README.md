@@ -34,9 +34,12 @@ brew install --cask rulogman
 
 **Apple Silicon and Intel.** Each release ships two macOS builds,
 `aarch64-apple-darwin` and `x86_64-apple-darwin`, and each cask's `arch`
-stanza picks the one that matches the Mac. A cask still at a version from
-before the Intel build declares `depends_on arch: :arm64` instead; the next
-release rewrites it into the two-architecture form.
+stanza picks the one that matches the Mac. Each also declares
+`depends_on macos: ">= :big_sur"`, the minimum the bundles name: Apple
+Silicon starts there anyway, but on an Intel Mac `brew audit` holds a cask to
+it. A cask still at a version from before the Intel build declares
+`depends_on arch: :arm64` instead; the next release rewrites it into the
+two-architecture form.
 
 **The quarantine flag is cleared on install.** The bundles are ad-hoc signed
 rather than notarized; there is no Apple Developer account behind them. So
