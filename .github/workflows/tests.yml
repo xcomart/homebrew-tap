@@ -1,6 +1,7 @@
 # Check every cask the way a user meets it: style and audit first, then a
 # real install on a macOS runner, a run of the installed binary, and an
-# uninstall with --zap.
+# uninstall with --zap. Once on Apple Silicon and once on Intel, since each
+# cask installs a different build on each.
 #
 # The app release workflows push version bumps here with a personal access
 # token rather than GITHUB_TOKEN, so their pushes run this workflow too: every
@@ -32,9 +33,14 @@ env:
 
 jobs:
   casks:
-    name: casks
-    runs-on: macos-latest
+    name: casks (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        # macos-15-intel is the last Intel image GitHub offers.
+        os: [macos-latest, macos-15-intel]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -76,6 +82,12 @@ jobs:
           for cask in Casks/*.rb; do
             name=$(basename "$cask" .rb)
             app="/Applications/$name.app"
+            # A cask from before the Intel build still declares Apple Silicon
+            # alone, until the next release of its application rewrites it.
+            if [ "$(uname -m)" = x86_64 ] && grep -qx '  depends_on arch: :arm64' "$cask"; then
+              echo "::notice title=$name::Apple Silicon only at this version; not installed on Intel"
+              continue
+            fi
             brew install --cask "xcomart/tap/$name"
             test -x "$app/Contents/MacOS/$name"
             codesign --verify --strict "$app"
