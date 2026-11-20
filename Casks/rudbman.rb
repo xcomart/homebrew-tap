@@ -1,8 +1,11 @@
 cask "rudbman" do
-  version "0.3.10"
-  sha256 "b8c08aa2819782f18406be87d54044662c778e9e88bd13f1c290e3ff43943374"
+  arch arm: "aarch64", intel: "x86_64"
 
-  url "https://github.com/xcomart/rudbman/releases/download/v#{version}/rudbman-v#{version}-aarch64-apple-darwin.tar.gz"
+  version "0.3.11"
+  sha256 arm:   "01eedfedadd1eca12e67db59eb56a1e1654023b9af90787b5f1989880e00e425",
+         intel: "8cfa51e9b901a80a6e05672f8356b2f314fbae26c69ab32f34a5e092f64872bf"
+
+  url "https://github.com/xcomart/rudbman/releases/download/v#{version}/rudbman-v#{version}-#{arch}-apple-darwin.tar.gz"
   name "rudbman"
   desc "GUI database workbench for any database with a JDBC driver"
   homepage "https://github.com/xcomart/rudbman"
@@ -13,10 +16,9 @@ cask "rudbman" do
   end
 
   auto_updates true
-  depends_on arch: :arm64
-  depends_on :macos
+  depends_on macos: ">= :big_sur"
 
-  app "rudbman-v#{version}-aarch64-apple-darwin/rudbman.app"
+  app "rudbman-v#{version}-#{arch}-apple-darwin/rudbman.app"
 
   # The bundle is ad-hoc signed, not notarized, so Gatekeeper refuses the
   # quarantined copy Homebrew downloads. The README's manual fix, done here.
