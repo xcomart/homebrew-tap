@@ -1,8 +1,11 @@
 cask "rulogman" do
-  version "0.6.6"
-  sha256 "fe00eb5ed8d1c310584edf49b058f366a4a3d84e1c3f25208eb1aca0eb22b4fb"
+  arch arm: "aarch64", intel: "x86_64"
 
-  url "https://github.com/xcomart/rulogman/releases/download/v#{version}/rulogman-v#{version}-aarch64-apple-darwin.tar.gz"
+  version "0.6.7"
+  sha256 arm:   "2dd91c0cfd059458dbf8a11bd2372aaeb8b81295eb8afbe10f1039bb563b026b",
+         intel: "7d35b205829512502edf810ce20302f0183767f2ce6b4b2142fee1fec052c6ae"
+
+  url "https://github.com/xcomart/rulogman/releases/download/v#{version}/rulogman-v#{version}-#{arch}-apple-darwin.tar.gz"
   name "rulogman"
   desc "GUI SSH terminal with a files panel, built-in editor and split panes"
   homepage "https://github.com/xcomart/rulogman"
@@ -13,10 +16,9 @@ cask "rulogman" do
   end
 
   auto_updates true
-  depends_on arch: :arm64
-  depends_on :macos
+  depends_on macos: ">= :big_sur"
 
-  app "rulogman-v#{version}-aarch64-apple-darwin/rulogman.app"
+  app "rulogman-v#{version}-#{arch}-apple-darwin/rulogman.app"
 
   # The bundle is ad-hoc signed, not notarized, so Gatekeeper refuses the
   # quarantined copy Homebrew downloads. The README's manual fix, done here.
