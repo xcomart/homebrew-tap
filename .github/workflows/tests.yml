@@ -44,6 +44,15 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
+      # The runner images carry Homebrew releases of different ages. The one
+      # on macos-15-intel still allowed Catalina, so it failed the audit of a
+      # cask that declared no Big Sur minimum, while a current Homebrew allows
+      # nothing older than Big Sur and fails `brew style` on that same minimum
+      # as redundant (Homebrew/OSDependsOn). Updating first judges the casks
+      # with the Homebrew a user installs them with.
+      - name: Update Homebrew
+        run: brew update
+
       # Homebrew finds a tap by its directory under Library/Taps. Linking the
       # checkout there tests this commit, not whatever `main` holds on GitHub.
       - name: Tap the checkout as xcomart/tap
